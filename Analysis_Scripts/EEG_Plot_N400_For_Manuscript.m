@@ -69,10 +69,11 @@ for iCond = 1:4
 
 
     % create figure
-    h=figure('Units','normalized','OuterPosition',[0.3, 0, 0.53, 0.97]);
+    %h=figure('Units','normalized','OuterPosition',[0.3, 0, 0.53, 0.97]);
+    h=figure('OuterPosition',[1440         927         560         390]);
 
     % set up subplot axes
-    subplot(2,3,1:3) % spans across top row
+    %subplot(2,3,1:3) % spans across top row
 
     for iPlot=1:3
 
@@ -99,7 +100,7 @@ for iCond = 1:4
 
     end
 
-    set(gca,'FontSize',16,'box','off','ylim',[-5,6])
+    set(gca,'FontSize',20,'box','off','ylim',[-7,6],'linewidth',1.5)
 
     xline(0,'LineStyle',':','LineWidth',1.5,'Color','k')
     yline(0,'LineStyle',':','LineWidth',1.5,'Color','k')
@@ -107,14 +108,14 @@ for iCond = 1:4
     xlabel('Time (ms)')
     ylabel('Amplitude (uV)')
 
-    title(thisCond,'FontSize',16)
+    %title(thisCond,'FontSize',16)
 
     pbaspect([2,1,1])
 
     %legend('Congruent','Incongruent')
     
 
-    %saveas(h,[destDir '/' filename '_ERPs.png'],'png')
+
 
 
 
@@ -126,12 +127,17 @@ for iCond = 1:4
 
     for iTime=1:length(times)
         if h_sig(iTime)==1
-            line([times(iTime),times(iTime+1)],[-4,-4],'linewidth',15)
+            line([times(iTime),times(iTime+1)],[-6.4,-6.4],'linewidth',10)
         end
     end
 
-    %legend([plot1(1).mainLine,plot1(2).mainLine,plot1(3).mainLine],'Congruent','Incongruent','Difference','Location','northwest')
-    legend([plot1(1).mainLine,plot1(2).mainLine,plot1(3).mainLine],'Congruent','Incongruent','Difference','Location','northwest')
+    legend([plot1(1).mainLine,plot1(2).mainLine,plot1(3).mainLine],'Cong.','Incong.','Diff.','Location','northeast','fontsize',14,'box','off')
+
+    saveas(h,[destDir '/ERP_Waveforms_' thisCond  '.eps'],'epsc')
+    saveas(h,[destDir '/ERP_Waveforms_' thisCond  '.png'],'png')
+
+
+    close
 
     %% plot topographic maps
 
@@ -145,17 +151,20 @@ for iCond = 1:4
     % all_data([1,31],:,:) = [];
     % chanlocs([1,31]) = [];
 
-    theseTimes = [400,600]; % 400-500 ms is roughly where the peak of the P3 would be expected, but this can be adjusted
-    %theseTimes = [100,152];
-    theseMapLimits = [-6,6]; % set these based on ERPs
+    theseTimes = [200,600]; % THIS WAS SET TO [400,600]
+   
+    theseMapLimits = [-5,5]; % THIS WAS SET TO [-6,6]
     %theseMapLimits = 'maxmin';
+
+    
 
     
 
 
     for iPlot=1:3
 
-        subplot(2,3,iPlot+3) % plots to bottom row
+        %subplot(2,3,iPlot+3) % plots to bottom row
+        h=figure;
 
         if iPlot==1
             topo_data = mean(mean(cong_data(:,:,find(theseTimes(1)==times):find(theseTimes(2)==times)),1),3);
@@ -168,16 +177,19 @@ for iCond = 1:4
             congIncong = 'Difference';
         end
 
-        title([congIncong ' [' num2str(theseTimes(1)), '-' num2str(theseTimes(2)) ' ms]'],'FontSize',14)
+        %title([congIncong ' [' num2str(theseTimes(1)), '-' num2str(theseTimes(2)) ' ms]'],'FontSize',14)
         topoplot(topo_data,...
             chanlocs,...
             'maplimits',theseMapLimits,...
             'emarker2',{theseChans,'o','w'});
-        cbar
+        %cbar
+
+        saveas(h,[destDir '/TOPO_' thisCond '_' congIncong  '.eps'],'epsc')
+        close
 
     end
 
-    saveas(h,[destDir '/ERPs_' thisCond '_Grand_Avg_With_Diff_Wave.png'],'png')
+    %saveas(h,[destDir '/ERPs_' thisCond '_Grand_Avg_With_Diff_Wave.png'],'png')
     %saveas(h,[destDir '/ERPs_' thisCond '_Grand_Avg.png'],'png')
 
 end

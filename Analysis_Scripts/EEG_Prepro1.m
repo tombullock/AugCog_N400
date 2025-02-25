@@ -99,7 +99,7 @@ for iSub = 1:length(subjects)
 
         elseif sjNum==2
             if iCond==1
-                timeIdxToRemove = 121; 
+                timeIdxToRemove = 121;
                 simpeakThreshold = 1322000;
             elseif iCond==2
                 timeIdxToRemove = 130;
@@ -285,7 +285,7 @@ for iSub = 1:length(subjects)
                 timeIdxToRemove = 0;
                 simpeakThreshold = 1100000;
             elseif iCond==3
-                timeIdxToRemove = 0; 
+                timeIdxToRemove = 0;
                 simpeakThreshold = 1100000;
             elseif iCond==4
                 timeIdxToRemove = 0;
@@ -442,7 +442,7 @@ for iSub = 1:length(subjects)
                 simpeakThreshold = 1100000;
             end
 
-                    elseif sjNum==25
+        elseif sjNum==25
             if iCond==1
                 timeIdxToRemove = 0;
                 simpeakThreshold = 1100000;
@@ -457,7 +457,7 @@ for iSub = 1:length(subjects)
                 simpeakThreshold = 1100000;
             end
 
-                                elseif sjNum==26
+        elseif sjNum==26
             if iCond==1
                 timeIdxToRemove = 0;
                 simpeakThreshold = 1100000;
@@ -476,7 +476,6 @@ for iSub = 1:length(subjects)
 
         EEG = pop_select(EEG,'notime',[0,timeIdxToRemove]);
 
-        
 
         % cut out end of EEG file
         if sjNum==2 && iCond==3

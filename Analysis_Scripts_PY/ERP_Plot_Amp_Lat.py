@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 2nd 2024
+
+@author: tombullock
+
+Purpose: load N400 behavioral data into dataframes and plot acc and RT
+
+
+"""
+import pandas as pd
+import numpy as np
+from scipy.io import loadmat
+import os
+import janitor # useful pivot function for wide > long
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+## SET DIRECTORIES AND LOAD DATA
+
+# set dirs (check all folders are already present)
+rDir = '/Users/tombullock/Documents/Psychology/AugCog/N400'
+scriptDir = os.path.join( rDir, 'Analysis_Scripts_Py')
+sourceDir = 'Data_Compiled'
+destDir = 'Plots_Py' 
+destDirData = 'Data_Compiled_Py'
+
+# set filenames
+#mat_file = 'BEH_Performance_Master_1000Hz.mat' # source file
+mat_file = 'ERP_AMP_LAT' # source file with sj01 added in [needs checking!]
+image_title = 'ERP_AMP_LAT' # dest figure title 
+
+# load matlab data
+mat_contents = loadmat(os.path.join(rDir,sourceDir, mat_file))
+
+# set path for figure ()
+figPath = os.path.join(rDir, destDir, image_title)
+
+
+## CREATE DATAFRAMES FOR AVERAGED BEHAVIOR
+
+# grab subjects info
+subjects = mat_contents['subjects'][0]
+
+# grab the all_beh array
+#all_beh = mat_contents['all_beh']
+
+## SET COLUMN NAMES FOR DATAFRAMES
+cond_names = ["MWA","MWL","WWA","WWL"]
+
+
+## FOR MEAN AMP
+
+# isolate acc
+all_acc = mat_contents['mean_amp_all']
+mean_acc = np.mean(all_acc,axis=0)
+sem_acc = np.std(all_acc,axis=0)/(len(all_acc)**.5)
+
+# put acc into a df
+df_acc = pd.DataFrame(all_acc)
+df_acc.columns = cond_names
+
+# convert dataframe from wide to long format
+df_acc_long = pd.melt(df_acc,
+                value_vars=cond_names,
+                var_name='Condition',
+                value_name='mean_amp_all')
+
+# add subject numbers
+df_acc_long.insert(0, 'SjNum', np.tile(subjects,4))
+
+
+## FOR RT
+
+# isolate the RTs (creates a 40 subs x 3 cond matrix)
+all_rt = mat_contents['peak_lat_all']
+
+# put data into dataframe
+df_rt = pd.DataFrame(all_rt)
+df_rt.columns = cond_names
+
+# convert dataframe from wide to long format
+df_rt_long = pd.melt(df_rt,
+                value_vars=cond_names,
+                var_name='Condition',
+                value_name='peak_lat_all')
+
+# add subject numbers
+df_rt_long.insert(0, 'SjNum', np.tile(subjects,4))
+
+
+# output dataframe to csv
+#filename = os.path.join(rDir,destDirData,'BEH_RT_Grouped.csv')
+#df1.to_csv(filename)
+
+
+# GENERATE PLOTS
+
+# set theme
+sns.set_theme(context="poster", style='ticks')
+
+# set color palette
+#thisColorPalette = ['#9A28D4','#3886EB','#F7482F'] # created using Adobe https://color.adobe.com/create/color-wheel
+#thisColorPalette = ['#0072B2','#E69F00','#009E73','#CC79A7']
+thisColorPalette = ['#0072B2','#009E73','#E69F00','#CC79A7']
+
+
+# set color for mean line
+yellow = '#B9D9C1'#'#A3D6A4'#'#53D798' #'#F5DA67'
+meanLineColor = yellow
+
+# set figure dims
+fig_w = 20
+fig_h = 12
+
+this_figsize = (fig_w,fig_h)
+thisSubplotShape = (fig_h,fig_w)
+
+fig = plt.figure(figsize=this_figsize)
+ax1 = plt.subplot2grid((fig_h, fig_w), (0, 0), rowspan = 5,colspan=6)
+#ax2 = plt.subplot2grid((fig_h, fig_w), (0, 6),rowspan = 5, colspan=2)
+ax3 = plt.subplot2grid((fig_h, fig_w), (0, 9), rowspan = 5, colspan=6)
+#ax4 = plt.subplot2grid((fig_h, fig_w), (0, 16), rowspan = 5, colspan=2)
+
+
+
+## ACC GROUPED
+
+# # plot box + swarm for averaged RTs
+# sns.swarmplot(ax=ax1,
+#           data=df_acc_long,
+#           x='Condition',
+#           y='Acc',
+#           palette='dark:k',
+#           alpha=.9,
+#           size=7)
+
+sns.boxplot(ax=ax1,
+        data=df_acc_long,
+        x='Condition',
+        y='mean_amp_all',
+        showmeans=True,
+        meanline=True,
+        showfliers=False,
+        palette=thisColorPalette,
+        order = ["MWA","WWA","MWL","WWL"],
+        meanprops={'color':meanLineColor,
+                    'ls':'-',
+                    'lw':3})
+
+ax1.set(xlabel=None, ylabel='Amplitude (uV)')#,ylim=(350,550),yticks=np.arange(375,526,25))
+sns.despine(ax=ax1, trim=True)
+
+
+# # plot density for averaged RTs
+# sns.kdeplot(ax=ax2,
+#         data=df_acc_long,
+#         y="mean_amp_all",
+#         hue="Condition",
+#         palette=thisColorPalette,
+#         fill=True,
+#         legend=False)
+
+# sns.despine(ax=ax2, trim=True)
+
+# ax2.set(ylabel=None,
+#     yticks=[],
+#     xticks=[])#,
+#     #ylim=(350,550))
+
+# ax2.spines['left'].set_visible(False)
+
+
+
+## RT GROUPED
+
+# # plot box + swarm for averaged RTs
+# sns.swarmplot(ax=ax3,
+#           data=df_rt_long,
+#           x='Condition',
+#           y='RT',
+#           palette='dark:k',
+#           alpha=.9,
+#           size=7)
+
+sns.boxplot(ax=ax3,
+        data=df_rt_long,
+        x='Condition',
+        y='peak_lat_all',
+        showmeans=True,
+        meanline=True,
+        showfliers=False,
+        palette=thisColorPalette,
+        order = ["MWA","WWA","MWL","WWL"],
+        meanprops={'color':meanLineColor,
+                    'ls':'-',
+                    'lw':3})
+
+ax3.set(xlabel=None, ylabel='Peak Latency (ms)')#,ylim=(350,550),yticks=np.arange(375,526,25))
+sns.despine(ax=ax3, trim=True)
+
+
+# # plot density for averaged RTs
+# sns.kdeplot(ax=ax4,
+#         data=df_rt_long,
+#         y="peak_lat_all",
+#         hue="Condition",
+#         palette=thisColorPalette,
+#         fill=True,
+#         legend=False)
+
+# sns.despine(ax=ax4, trim=True)
+
+# ax4.set(ylabel=None,
+#     yticks=[],
+#     xticks=[])#,
+#     #ylim=(350,550))
+
+# ax4.spines['left'].set_visible(False)
+
+
+
+## ADD TEXT LABELS
+#ax1.text(-.1, 1.1, 'a', transform=ax1.transAxes, fontweight='bold',
+#     fontsize=32, va='top', ha='right')  # adds a subplot label
+#ax3.text(-.1, 1.1, 'b', transform=ax3.transAxes, fontweight='bold',
+#     fontsize=32, va='top', ha='right')  # adds a subplot label
+
+
+# save figure
+fig.show()
+plt.savefig(figPath + '.png', bbox_inches='tight')
+plt.savefig(figPath + '.pdf', bbox_inches='tight')
+#fig.close()
+
+
+
+
